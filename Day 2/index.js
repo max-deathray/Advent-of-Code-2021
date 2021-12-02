@@ -8,8 +8,9 @@ console.log("length of total array:", plannedCourseArray.length);
 
 const buildCourseObject = (plannedCourse) => {
   const aggregatedCourse = {
-    forward: 0,
-    down: 0,
+    hPosition: 0,
+    depth: 0,
+    aim: 0,
   };
 
   for (let i = 0; i < plannedCourse.length; i++) {
@@ -19,13 +20,15 @@ const buildCourseObject = (plannedCourse) => {
 
     switch (direction) {
       case "forward":
-        aggregatedCourse["forward"] += Number(distance);
+        aggregatedCourse["hPosition"] += Number(distance);
+        const depthIncrease = aggregatedCourse["aim"] * Number(distance);
+        aggregatedCourse["depth"] += depthIncrease;
         break;
       case "down":
-        aggregatedCourse["down"] += Number(distance);
+        aggregatedCourse["aim"] += Number(distance);
         break;
       case "up":
-        aggregatedCourse["down"] -= Number(distance);
+        aggregatedCourse["aim"] -= Number(distance);
         break;
     }
   }
@@ -33,8 +36,8 @@ const buildCourseObject = (plannedCourse) => {
   return aggregatedCourse;
 };
 
-const { forward, down } = buildCourseObject(plannedCourseArray);
+const { hPosition, depth, aim } = buildCourseObject(plannedCourseArray);
 
-console.log({ forward, down });
+console.log({ hPosition, depth, aim });
 
-console.log(forward * down);
+console.log(hPosition * depth);
