@@ -41,3 +41,5 @@ const { hPosition, depth, aim } = buildCourseObject(plannedCourseArray);
 console.log({ hPosition, depth, aim });
 
 console.log(hPosition * depth);
+
+console.log("testing");
