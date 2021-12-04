@@ -18,7 +18,7 @@ const calculateGammaRate = (binaryArray) => {
       resultArray[j] = resultArray[j] + Number(currentBinaryChar);
     }
   }
-
+  console.log({ resultArray });
   return resultArray;
 };
 
@@ -31,7 +31,7 @@ const getGammaAndEpsilonRates = (arrayOfNumbers) => {
   const epsilonRateArray = [];
 
   arrayOfNumbers.forEach((number) => {
-    if (number > 500) {
+    if (number >= arrayOfNumbers.length / 2) {
       gammaRateArray.push(1);
       epsilonRateArray.push(0);
     } else {
@@ -52,14 +52,96 @@ const getGammaAndEpsilonRates = (arrayOfNumbers) => {
 const { gammaRateDecimal, epsilonRateDecimal, gammaRate, epsilonRate } =
   getGammaAndEpsilonRates(finalNumbers);
 
+console.log({ gammaRate, epsilonRate });
+
 const finalAnswer = gammaRateDecimal * epsilonRateDecimal;
 
-console.log({ finalAnswer });
+// console.log({ finalAnswer });
 
 // Part Two
 
-const findOxygenGeneratorRating = (inputArray, gammaRate) => {};
+// gammaRate: '011111101100'
 
-const oxy = findOxygenGeneratorRating(diagnosticReport, gammaRate);
+const findOxygenRate = (binArray, index, value) => {
+  console.log("line 67, length of input array:", binArray.length);
 
-console.log({ oxy });
+  // base case
+
+  if (binArray.length === 1) return binArray;
+
+  // filter out any binaries that do not have the given value in the given index
+
+  console.log("current evaulating index:", index);
+
+  const filteredArray = binArray.filter(
+    (binaryNumber) => binaryNumber[index] === value
+  );
+  // call this on the filtered array, incrementing the index and updating the value
+  // based on what is most common in that position.....
+  const prepNums = calculateGammaRate(filteredArray);
+
+  console.log(
+    "just filtered out everything except one where the ",
+    index,
+    "position has ",
+    value
+  );
+  console.log({ filteredArray });
+
+  const { gammaRate } = getGammaAndEpsilonRates(prepNums);
+
+  const nextIndex = index + 1;
+
+  const nextValue = gammaRate[nextIndex];
+
+  return findOxygenRate(filteredArray, nextIndex, nextValue);
+};
+
+const oxygenThing = findOxygenRate(diagnosticReport, 0, "0");
+
+console.log({ oxygenThing });
+
+// { oxygenThing: [ '000000000100' ] }
+
+const findCarbonRate = (binArray, index, value) => {
+  console.log("line 67, length of input array:", binArray.length);
+
+  // base case
+
+  if (binArray.length === 1) return binArray;
+
+  // filter out any binaries that do not have the given value in the given index
+
+  console.log("current evaulating index:", index);
+
+  const filteredArray = binArray.filter(
+    (binaryNumber) => binaryNumber[index] === value
+  );
+  // call this on the filtered array, incrementing the index and updating the value
+  // based on what is most common in that position.....
+  const prepNums = calculateGammaRate(filteredArray);
+
+  const { epsilonRate } = getGammaAndEpsilonRates(prepNums);
+
+  const nextIndex = index + 1;
+
+  const nextValue = epsilonRate[nextIndex];
+
+  return findCarbonRate(filteredArray, nextIndex, nextValue);
+};
+
+const carbonThing = findCarbonRate(diagnosticReport, 0, "1");
+
+console.log({ carbonThing });
+
+// { carbonThing: [ '111111111100' ] }
+
+const oxygenDecimal = parseInt(oxygenThing, 2);
+
+const carbonDecimal = parseInt(carbonThing, 2);
+
+console.log({ oxygenDecimal, carbonDecimal });
+
+console.log(oxygenDecimal * carbonDecimal);
+
+// { oxygenDecimal: 4, carbonDecimal: 4092 }
