@@ -1,147 +1,117 @@
+const { count } = require("console");
 const fs = require("fs");
 
 const diagnosticReport = fs
   .readFileSync("binary.txt", { encoding: "utf-8" })
   .split("\n");
 
-const calculateGammaRate = (binaryArray) => {
-  const resultArray = new Array(12).fill(0);
+const testDiagnosticReport = fs
+  .readFileSync("test.txt", { encoding: "utf-8" })
+  .split("\n");
 
-  for (let i = 0; i < binaryArray.length; i++) {
-    // e.g. "000011001000"
-    const currentBinaryString = binaryArray[i];
+const countZeroesAndOnes = (arrayOfBinaries) => {
+  // determine the length of the given binary numbers
+  const length = arrayOfBinaries[0].length;
 
-    for (let j = 0; j < currentBinaryString.length; j++) {
-      // e.g. "1" or "0"
-      const currentBinaryChar = currentBinaryString[j];
+  // create some storage arrays of that length
+  const zeroes = new Array(length).fill(0);
+  const ones = new Array(length).fill(0);
 
-      resultArray[j] = resultArray[j] + Number(currentBinaryChar);
+  for (binaryNumber of arrayOfBinaries) {
+    // take each binary string and split into an array
+    const bits = [...binaryNumber];
+
+    // loop over each array of bits and tally the 0s and 1s
+    bits.forEach((bit, index) => {
+      if (bit === "0") {
+        zeroes[index]++;
+      } else {
+        ones[index]++;
+      }
+    });
+  }
+
+  return { length: length, zeroes: zeroes, ones: ones };
+};
+
+const { length, zeroes, ones } = countZeroesAndOnes(testDiagnosticReport);
+
+const findRates = (binaryArray) => {
+  const { length, zeroes, ones } = countZeroesAndOnes(binaryArray);
+
+  let gammaRate = "";
+  let epsilonRate = "";
+
+  for (let i = 0; i < length; i++) {
+    let bit = 0;
+    if (ones[i] > zeroes[i]) {
+      bit = 1;
+    }
+    if (ones[i] === zeroes[i]) {
+      gammaRate += 1;
+      epsilonRate += 0;
+    } else {
+      gammaRate += bit;
+      epsilonRate += bit === 0 ? 1 : 0;
     }
   }
-  console.log({ resultArray });
-  return resultArray;
+
+  return {
+    gammaRate,
+    epsilonRate,
+  };
 };
 
-const finalNumbers = calculateGammaRate(diagnosticReport);
-
-console.log({ finalNumbers });
-
-const getGammaAndEpsilonRates = (arrayOfNumbers) => {
-  const gammaRateArray = [];
-  const epsilonRateArray = [];
-
-  arrayOfNumbers.forEach((number) => {
-    if (number >= arrayOfNumbers.length / 2) {
-      gammaRateArray.push(1);
-      epsilonRateArray.push(0);
-    } else {
-      gammaRateArray.push(0);
-      epsilonRateArray.push(1);
-    }
-  });
-
-  const gammaRate = gammaRateArray.join("");
-  const epsilonRate = epsilonRateArray.join("");
-
-  const gammaRateDecimal = parseInt(gammaRate, 2);
-  const epsilonRateDecimal = parseInt(epsilonRate, 2);
-
-  return { gammaRate, gammaRateDecimal, epsilonRate, epsilonRateDecimal };
-};
-
-const { gammaRateDecimal, epsilonRateDecimal, gammaRate, epsilonRate } =
-  getGammaAndEpsilonRates(finalNumbers);
-
-console.log({ gammaRate, epsilonRate });
-
-const finalAnswer = gammaRateDecimal * epsilonRateDecimal;
-
-// console.log({ finalAnswer });
+const { gammaRate, epsilonRate } = findRates(testDiagnosticReport);
 
 // Part Two
 
-// gammaRate: '011111101100'
-
-const findOxygenRate = (binArray, index, value) => {
-  console.log("line 67, length of input array:", binArray.length);
-
+const findOxygen = (array, index = 0) => {
   // base case
+  if (array.length === 1) return array;
 
-  if (binArray.length === 1) return binArray;
+  const { zeroes, ones } = countZeroesAndOnes(array);
 
-  // filter out any binaries that do not have the given value in the given index
+  let most = "1";
 
-  console.log("current evaulating index:", index);
+  if (zeroes[index] > ones[index]) {
+    most = "0";
+  }
 
-  const filteredArray = binArray.filter(
-    (binaryNumber) => binaryNumber[index] === value
-  );
-  // call this on the filtered array, incrementing the index and updating the value
-  // based on what is most common in that position.....
-  const prepNums = calculateGammaRate(filteredArray);
+  const filteredArray = array.filter((binary) => {
+    return binary[index] === most;
+  });
 
-  console.log(
-    "just filtered out everything except one where the ",
-    index,
-    "position has ",
-    value
-  );
-  console.log({ filteredArray });
-
-  const { gammaRate } = getGammaAndEpsilonRates(prepNums);
-
-  const nextIndex = index + 1;
-
-  const nextValue = gammaRate[nextIndex];
-
-  return findOxygenRate(filteredArray, nextIndex, nextValue);
+  return findOxygen(filteredArray, index + 1);
 };
 
-const oxygenThing = findOxygenRate(diagnosticReport, 0, "0");
-
-console.log({ oxygenThing });
-
-// { oxygenThing: [ '000000000100' ] }
-
-const findCarbonRate = (binArray, index, value) => {
-  console.log("line 67, length of input array:", binArray.length);
-
+const findCarbon = (array, index = 0) => {
   // base case
+  if (array.length === 1) return array;
 
-  if (binArray.length === 1) return binArray;
+  const { zeroes, ones } = countZeroesAndOnes(array);
 
-  // filter out any binaries that do not have the given value in the given index
+  let least = "0";
 
-  console.log("current evaulating index:", index);
+  if (zeroes[index] > ones[index]) {
+    least = "1";
+  }
 
-  const filteredArray = binArray.filter(
-    (binaryNumber) => binaryNumber[index] === value
-  );
-  // call this on the filtered array, incrementing the index and updating the value
-  // based on what is most common in that position.....
-  const prepNums = calculateGammaRate(filteredArray);
+  const filteredArray = array.filter((binary) => {
+    return binary[index] === least;
+  });
 
-  const { epsilonRate } = getGammaAndEpsilonRates(prepNums);
-
-  const nextIndex = index + 1;
-
-  const nextValue = epsilonRate[nextIndex];
-
-  return findCarbonRate(filteredArray, nextIndex, nextValue);
+  return findCarbon(filteredArray, index + 1);
 };
 
-const carbonThing = findCarbonRate(diagnosticReport, 0, "1");
+const oxygen = findOxygen(diagnosticReport);
 
-console.log({ carbonThing });
+const carbon = findCarbon(diagnosticReport);
 
-// { carbonThing: [ '111111111100' ] }
+console.log({ oxygen });
 
-const oxygenDecimal = parseInt(oxygenThing, 2);
+console.log({ carbon });
 
-const carbonDecimal = parseInt(carbonThing, 2);
+console.log(parseInt(oxygen, 2), parseInt(carbon, 2));
 
-console.log({ oxygenDecimal, carbonDecimal });
-
-console.log(oxygenDecimal * carbonDecimal);
-
-// { oxygenDecimal: 4, carbonDecimal: 4092 }
+console.log(parseInt(oxygen, 2) * parseInt(carbon, 2));
