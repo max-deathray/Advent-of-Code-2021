@@ -2,7 +2,7 @@ const { count } = require('console');
 const fs = require('fs');
 
 const bingoInput = fs
-  .readFileSync('testInput.txt', { encoding: 'utf-8' })
+  .readFileSync('input.txt', { encoding: 'utf-8' })
   // split on double link break
   .split('\n\n')
   // remove falsy values (empty strings)
@@ -19,6 +19,8 @@ const bingoInput = fs
 
 let [drawnNumbers, ...cards] = bingoInput;
 
+// console.log({ drawnNumbers, cards });
+
 class Card {
   constructor(numbers) {
     this.cardSize = 5;
@@ -33,9 +35,25 @@ class Card {
     }
     this.rows = new Array(this.cardSize).fill(0);
     this.columns = new Array(this.cardSize).fill(0);
+    this.isComplete = false;
   }
 
-  addMarkedNumber(n) {}
+  addMarkedNumber(number) {
+    const position = this.numberToPosition.get(number);
+    // if the number is not on the card at all, early exit
+    if (!position) {
+      return;
+    }
+    // otherwise, mark which row and column it is in
+    this.rows[position.row]++;
+    this.columns[position.column]++;
+    if (
+      this.rows[position.row] === this.cardSize ||
+      this.columns[position.column].length === this.cardSize
+    ) {
+      this.isComplete = true;
+    }
+  }
 
   showMap() {
     for (const item of this.numberToPosition) {
@@ -46,8 +64,40 @@ class Card {
 
 cards = cards.map((x) => new Card(x));
 
-// console.log(cards);
+let actuallyDrawn = [];
 
-console.log(cards[0].showMap());
+const partOne = (cards, drawnNumbers) => {
+  let winningCard;
 
-// console.log({ drawnNumbers, cards });
+  for (const drawn of drawnNumbers) {
+    let finished = false;
+    actuallyDrawn.push(drawn);
+    for (const card of cards) {
+      card.addMarkedNumber(drawn);
+
+      if (card.isComplete) {
+        winningCard = card;
+
+        finished = true;
+        break;
+      }
+    }
+    if (finished) break;
+  }
+
+  return winningCard;
+};
+
+const winningCard = partOne(cards, drawnNumbers);
+
+winningCard.showMap();
+
+const unmarkedTotal = winningCard.numbers
+  .filter((number) => !actuallyDrawn.includes(number))
+  .reduce((acc, el) => acc + el, 0);
+
+const lastNumberDrawn = actuallyDrawn.slice(-1)[0];
+
+console.log({ unmarkedTotal, lastNumberDrawn });
+
+console.log(unmarkedTotal * lastNumberDrawn);
